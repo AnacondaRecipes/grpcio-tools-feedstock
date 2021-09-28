@@ -1,4 +1,4 @@
-{% set version = "1.35.0" %}
+{% set version = "1.41.0" %}
 {% set name = "grpcio-tools" %}
 
 package:
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 9e2a41cba9c5a20ae299d0fdd377fe231434fa04cbfbfb3807293c6ec10b03cf
+  sha256: 3891b1df82369acbc8451d4952cd20755f49a82398dce62437511ad17b47290e
   patches:
     - 0001-Monkey-patch-distutils.ccompiler.spawn-to-elide-std-.patch
 
