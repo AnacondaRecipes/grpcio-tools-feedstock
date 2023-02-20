@@ -34,8 +34,12 @@ requirements:
     - python
 
 test:
+  requires:
+    - pip
   imports:
     - grpc_tools
+  commands:
+    - pip check
 
 about:
   home: https://grpc.io
