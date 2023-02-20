@@ -24,6 +24,8 @@ requirements:
   host:
     - grpcio =={{ version }}
     - pip
+    - setuptools
+    - wheel
     - protobuf >=3.6.0
     - python
   run:
