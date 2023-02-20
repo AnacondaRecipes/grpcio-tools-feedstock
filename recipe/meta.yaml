@@ -28,7 +28,7 @@ requirements:
     - pip
     - setuptools
     - wheel
-    - protobuf
+    - protobuf 3.19.1
     - python
   run:
     - grpcio =={{ version }}
