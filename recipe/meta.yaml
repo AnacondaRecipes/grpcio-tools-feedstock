@@ -30,6 +30,7 @@ requirements:
     - wheel
     - protobuf 3.20.3
     - python
+    - cython 0.29.32 # [unix]
   run:
     - grpcio =={{ version }}
     - protobuf >=3.6.0
