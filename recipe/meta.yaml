@@ -1,4 +1,4 @@
-{% set version = "1.35.0" %}
+{% set version = "1.42.0" %}
 {% set name = "grpcio-tools" %}
 
 package:
@@ -7,12 +7,14 @@ package:
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 9e2a41cba9c5a20ae299d0fdd377fe231434fa04cbfbfb3807293c6ec10b03cf
+  sha256: d0a0daa82eb2c2fb8e12b82a458d1b7c5516fe1135551da92b1a02e2cba93422
   patches:
     - 0001-Monkey-patch-distutils.ccompiler.spawn-to-elide-std-.patch
 
 build:
-  number: 1
+  number: 0
+  missing_dso_whitelist:  # [s390x]
+    - $RPATH/ld64.so.1    # [s390x]
 
 requirements:
   build:
@@ -24,7 +26,9 @@ requirements:
   host:
     - grpcio =={{ version }}
     - pip
-    - protobuf >=3.6.0
+    - setuptools
+    - wheel
+    - protobuf 3.20.3
     - python
   run:
     - grpcio =={{ version }}
@@ -32,8 +36,12 @@ requirements:
     - python
 
 test:
+  requires:
+    - pip
   imports:
     - grpc_tools
+  commands:
+    - pip check
 
 about:
   home: https://grpc.io
@@ -41,7 +49,7 @@ about:
   license_family: APACHE
   license_file: LICENSE.txt
   summary: Protobuf code generator for gRPC
-  doc_source_url: https://github.com/grpc/grpc/tree/master/doc
+  description: Various tools for use with gRPC
   doc_url: https://grpc.io/docs/
   dev_url: https://github.com/grpc/grpc/tree/master/tools
 
