@@ -8,8 +8,9 @@ package:
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
   sha256: 5fd5e1582b678e6b941ee5f5809340be5e0724691df5299aae8226640f94e18f
-  patches:
-   - unvendor_abseil_protobuf.patch
+  # more work required to unvendor win - to be done in later update.
+  patches:                          # [not win]
+   - unvendor_abseil_protobuf.patch # [not win]
 
 build:
   skip: true  # [py<37]

@@ -1,5 +1,5 @@
 diff --git a/tools/distrib/python/grpcio_tools/setup.py b/tools/distrib/python/grpcio_tools/setup.py
-index b479143387..8aea74f413 100644
+index b479143387..5eb07a791d 100644
 --- a/tools/distrib/python/grpcio_tools/setup.py
 +++ b/tools/distrib/python/grpcio_tools/setup.py
 @@ -23,6 +23,7 @@ import subprocess
@@ -38,7 +38,8 @@ index b479143387..8aea74f413 100644
 +        EXTRA_ENV_COMPILE_ARGS += " /std:c++17"
          # We need to statically link the C++ Runtime, only the C runtime is
          # available dynamically
-         EXTRA_ENV_COMPILE_ARGS += " /MT"
+-        EXTRA_ENV_COMPILE_ARGS += " /MT"
++        EXTRA_ENV_COMPILE_ARGS += " /MD"
      elif "linux" in sys.platform or "darwin" in sys.platform:
 -        # GCC & Clang by defaults uses C17 so only C++14 needs to be specified.
 -        EXTRA_ENV_COMPILE_ARGS += " -std=c++14"
