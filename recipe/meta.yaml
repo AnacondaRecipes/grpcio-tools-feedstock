@@ -8,6 +8,8 @@ package:
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
   sha256: 5fd5e1582b678e6b941ee5f5809340be5e0724691df5299aae8226640f94e18f
+  patches:
+   - unvendor_abseil_protobuf.patch
 
 build:
   skip: true  # [py<37]
@@ -19,22 +21,33 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
+    - patch # [unix]
+    - m2-patch # [win]
   host:
     - pip
     - setuptools
     - wheel
     - python
     - cython
+    - libabseil 20240116.2
+    - libprotobuf 4.25.3
+    - protobuf 4.25.3
   run:
     - grpcio >={{ version }}
     - protobuf >=4.21.6,<5.0a0
+    - setuptools
     - python
+    # through run_exports
+    - libabseil
+    - libprotobuf
 
 test:
   requires:
     - pip
   imports:
     - grpc_tools
+    - grpc_tools.protoc
+    - grpc_tools.command
   commands:
     - pip check
 
