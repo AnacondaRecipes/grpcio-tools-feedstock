@@ -1,46 +1,58 @@
-{% set version = "1.42.0" %}
+{% set version = "1.62.2" %}
 {% set name = "grpcio-tools" %}
 
 package:
-  name: "{{ name|lower }}"
-  version: "{{ version }}"
+  name: {{ name|lower }}
+  version: {{ version }}
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: d0a0daa82eb2c2fb8e12b82a458d1b7c5516fe1135551da92b1a02e2cba93422
-  patches:
-    - 0001-Monkey-patch-distutils.ccompiler.spawn-to-elide-std-.patch
+  sha256: 5fd5e1582b678e6b941ee5f5809340be5e0724691df5299aae8226640f94e18f
+  # more work required to unvendor win - to be done in later update.
+  patches:                          # [not win]
+   - unvendor_abseil_protobuf.patch # [not win]
 
 build:
-  number: 2
+  skip: true  # [py<37]
+  number: 0
   missing_dso_whitelist:  # [s390x]
     - $RPATH/ld64.so.1    # [s390x]
+  ignore_run_exports:
+    # The only abseil type used directly is absl::string_view 
+    # which is an alias to std::string_view in our case.
+    # Since libabseil is built with ABSL_OPTION_USE_STD_STRING_VIEW.
+    # Revisit on grpcio-tools updates.
+    - libabseil
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - patch       # [not win]
-    - m2-patch    # [win]
- 
+    - patch # [unix]
+    - m2-patch # [win]
   host:
-    - grpcio =={{ version }}
     - pip
     - setuptools
     - wheel
-    - protobuf 3.20.3
     - python
-    - cython 0.29.32
+    - cython
+    - libabseil 20240116.2
+    - libprotobuf 4.25.3
   run:
-    - grpcio =={{ version }}
-    - protobuf >=3.6.0
+    - grpcio >={{ version }}
+    - protobuf >=4.21.6,<5.0a0
+    - setuptools
     - python
+    # through run_exports
+    - libprotobuf
 
 test:
   requires:
     - pip
   imports:
     - grpc_tools
+    - grpc_tools.protoc
+    - grpc_tools.command
   commands:
     - pip check
 
@@ -52,7 +64,7 @@ about:
   summary: Protobuf code generator for gRPC
   description: Various tools for use with gRPC
   doc_url: https://grpc.io/docs/
-  dev_url: https://github.com/grpc/grpc/tree/master/tools
+  dev_url: https://github.com/grpc/grpc/tree/master/tools/distrib/python/grpcio_tools
 
 extra:
   recipe-maintainers:

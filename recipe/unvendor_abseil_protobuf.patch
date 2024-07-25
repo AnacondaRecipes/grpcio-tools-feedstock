@@ -1,0 +1,91 @@
+diff --git a/tools/distrib/python/grpcio_tools/setup.py b/tools/distrib/python/grpcio_tools/setup.py
+index b479143387..5eb07a791d 100644
+--- a/tools/distrib/python/grpcio_tools/setup.py
++++ b/tools/distrib/python/grpcio_tools/setup.py
+@@ -23,6 +23,7 @@ import subprocess
+ from subprocess import PIPE
+ import sys
+ import sysconfig
++import pathlib
+ 
+ import pkg_resources
+ import setuptools
+@@ -90,7 +91,7 @@ def check_linker_need_libatomic():
+     )
+     cxx = os.environ.get("CXX", "c++")
+     cpp_test = subprocess.Popen(
+-        [cxx, "-x", "c++", "-std=c++14", "-"],
++        [cxx, "-x", "c++", "-std=c++17", "-"],
+         stdin=PIPE,
+         stdout=PIPE,
+         stderr=PIPE,
+@@ -101,7 +102,7 @@ def check_linker_need_libatomic():
+     # Double-check to see if -latomic actually can solve the problem.
+     # https://github.com/grpc/grpc/issues/22491
+     cpp_test = subprocess.Popen(
+-        [cxx, "-x", "c++", "-std=c++14", "-", "-latomic"],
++        [cxx, "-x", "c++", "-std=c++17", "-", "-latomic"],
+         stdin=PIPE,
+         stdout=PIPE,
+         stderr=PIPE,
+@@ -140,14 +141,14 @@ EXTRA_ENV_LINK_ARGS = os.environ.get("GRPC_PYTHON_LDFLAGS", None)
+ if EXTRA_ENV_COMPILE_ARGS is None:
+     EXTRA_ENV_COMPILE_ARGS = ""
+     if "win32" in sys.platform:
+-        # MSVC by defaults uses C++14 so C11 needs to be specified.
+-        EXTRA_ENV_COMPILE_ARGS += " /std:c11"
++        # MSVC by defaults uses c++17 so C11 needs to be specified.
++        EXTRA_ENV_COMPILE_ARGS += " /std:c++17"
+         # We need to statically link the C++ Runtime, only the C runtime is
+         # available dynamically
+-        EXTRA_ENV_COMPILE_ARGS += " /MT"
++        EXTRA_ENV_COMPILE_ARGS += " /MD"
+     elif "linux" in sys.platform or "darwin" in sys.platform:
+-        # GCC & Clang by defaults uses C17 so only C++14 needs to be specified.
+-        EXTRA_ENV_COMPILE_ARGS += " -std=c++14"
++        # GCC & Clang by defaults uses C17 so only c++17 needs to be specified.
++        EXTRA_ENV_COMPILE_ARGS += " -std=c++17"
+         EXTRA_ENV_COMPILE_ARGS += " -fno-wrapv -frtti"
+ if EXTRA_ENV_LINK_ARGS is None:
+     EXTRA_ENV_LINK_ARGS = ""
+@@ -190,14 +191,27 @@ EXTRA_LINK_ARGS = shlex.split(EXTRA_ENV_LINK_ARGS)
+ if BUILD_WITH_STATIC_LIBSTDCXX:
+     EXTRA_LINK_ARGS.append("-static-libstdc++")
+ 
+-CC_FILES = [os.path.normpath(cc_file) for cc_file in protoc_lib_deps.CC_FILES]
++CC_FILES = []
+ PROTO_FILES = [
+     os.path.normpath(proto_file) for proto_file in protoc_lib_deps.PROTO_FILES
+ ]
+-CC_INCLUDES = [
+-    os.path.normpath(include_dir) for include_dir in protoc_lib_deps.CC_INCLUDES
+-]
+-PROTO_INCLUDE = os.path.normpath(protoc_lib_deps.PROTO_INCLUDE)
++
++if os.name == 'nt':
++    EXTENSION_LIBRARIES = ["libprotobuf", "libprotoc", "abseil_dll"]
++    CC_INCLUDES = [
++        os.path.normpath(include_dir) for include_dir in [os.environ['LIBRARY_INC']]
++    ]
++    PROTO_INCLUDE = os.environ['LIBRARY_INC']
++else:
++    EXTENSION_LIBRARIES = ["protobuf", "protoc"]
++    CC_INCLUDES = [
++        os.path.normpath(include_dir) for include_dir in [os.path.join(os.environ['PREFIX'], 'include')]
++    ]
++    PROTO_INCLUDE = os.path.normpath(os.path.join(os.environ['PREFIX'], 'include'))
++    EXTENSION_LIBRARIES += tuple(
++        lib.stem[3:] for lib in pathlib.Path(os.path.join(os.environ['PREFIX'])).glob(f"lib/libabsl_*.{os.environ['SHLIB_EXT']}")
++    )
++print(f"LINKED LIBS: {EXTENSION_LIBRARIES}")
+ 
+ GRPC_PYTHON_TOOLS_PACKAGE = "grpc_tools"
+ GRPC_PYTHON_PROTO_RESOURCES_NAME = "_proto"
+@@ -276,6 +290,7 @@ def extension_modules():
+             os.path.join("grpc_root", "include"),
+         ]
+         + CC_INCLUDES,
++        libraries=list(EXTENSION_LIBRARIES),
+         language="c++",
+         define_macros=list(DEFINE_MACROS),
+         extra_compile_args=list(EXTRA_COMPILE_ARGS),
