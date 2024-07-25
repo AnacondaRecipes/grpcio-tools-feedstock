@@ -17,6 +17,12 @@ build:
   number: 0
   missing_dso_whitelist:  # [s390x]
     - $RPATH/ld64.so.1    # [s390x]
+  ignore_run_exports:
+    # The only abseil type used directly is absl::string_view 
+    # which is an alias to std::string_view in our case.
+    # Since libabseil is built with ABSL_OPTION_USE_STD_STRING_VIEW.
+    # Revisit on grpcio-tools updates.
+    - libabseil
 
 requirements:
   build:
@@ -32,14 +38,12 @@ requirements:
     - cython
     - libabseil 20240116.2
     - libprotobuf 4.25.3
-    - protobuf 4.25.3
   run:
     - grpcio >={{ version }}
     - protobuf >=4.21.6,<5.0a0
     - setuptools
     - python
     # through run_exports
-    - libabseil
     - libprotobuf
 
 test:
